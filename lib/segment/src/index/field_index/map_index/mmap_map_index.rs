@@ -248,11 +248,7 @@ impl<N: MapIndexKey + Key + ?Sized> MmapMapIndex<N> {
         }
     }
 
-    pub fn get_iterator(
-        &self,
-        value: &N,
-        hw_counter: &HardwareCounterCell,
-    ) -> Box<dyn Iterator<Item = &PointOffsetType> + '_> {
+    pub fn get_iterator(&self, value: &N, hw_counter: &HardwareCounterCell) -> IdIter {
         let hw_counter = self.make_conditioned_counter(hw_counter);
 
         match self.value_to_points.get(value) {
@@ -265,7 +261,8 @@ impl<N: MapIndexKey + Key + ?Sized> MmapMapIndex<N> {
                 Box::new(
                     slice
                         .iter()
-                        .filter(|idx| !self.deleted.get(**idx as usize).unwrap_or(false)),
+                        .copied()
+                        .filter(|idx| !self.deleted.get(*idx as usize).unwrap_or(false)),
                 )
             }
             Ok(None) => {
