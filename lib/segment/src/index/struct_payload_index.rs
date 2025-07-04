@@ -649,15 +649,19 @@ impl PayloadIndex for StructPayloadIndex {
         &mut self,
         field: PayloadKeyTypeRef,
         new_payload_schema: &PayloadFieldSchema,
-    ) -> OperationResult<()> {
-        if let Some(current_schema) = self.config.indexed_fields.get(field) {
-            // the field is already indexed with the same schema
-            // no need to rebuild index and to save the config
-            if current_schema != new_payload_schema {
-                self.drop_index(field)?;
-            }
+    ) -> OperationResult<bool> {
+        let Some(current_schema) = self.config.indexed_fields.get(field) else {
+            return Ok(false);
+        };
+
+        // the field is already indexed with the same schema
+        // no need to rebuild index and to save the config
+        if current_schema == new_payload_schema {
+            return Ok(false);
         }
-        Ok(())
+
+        self.drop_index(field)?;
+        Ok(true)
     }
 
     fn estimate_cardinality(
@@ -894,7 +898,17 @@ impl PayloadIndex for StructPayloadIndex {
         files
     }
 
-    fn immutable_files(&self) -> Vec<PathBuf> {
-        Vec::new() // TODO!
+    fn immutable_files(&self) -> Vec<(PayloadKeyType, PathBuf)> {
+        self.field_indexes
+            .iter()
+            .flat_map(|(key, indexes)| {
+                indexes.iter().flat_map(|index| {
+                    index
+                        .immutable_files()
+                        .into_iter()
+                        .map(|file| (key.clone(), file))
+                })
+            })
+            .collect()
     }
 }

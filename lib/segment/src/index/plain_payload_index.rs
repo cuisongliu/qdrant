@@ -122,10 +122,11 @@ impl PayloadIndex for PlainPayloadIndex {
         &mut self,
         field: PayloadKeyTypeRef,
         _new_payload_schema: &PayloadFieldSchema,
-    ) -> OperationResult<()> {
+    ) -> OperationResult<bool> {
         // Just always drop the index, as we don't have any indexes
         self.config.indexed_fields.remove(field);
-        self.save_config()
+        self.save_config()?;
+        Ok(true)
     }
 
     fn estimate_cardinality(

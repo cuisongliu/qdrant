@@ -61,7 +61,7 @@ pub trait PayloadIndex {
         &mut self,
         field: PayloadKeyTypeRef,
         new_payload_schema: &PayloadFieldSchema,
-    ) -> OperationResult<()>;
+    ) -> OperationResult<bool>;
 
     /// Estimate amount of points (min, max) which satisfies filtering condition.
     ///
@@ -160,7 +160,7 @@ pub trait PayloadIndex {
 
     fn files(&self) -> Vec<PathBuf>;
 
-    fn immutable_files(&self) -> Vec<PathBuf> {
+    fn immutable_files(&self) -> Vec<(PayloadKeyType, PathBuf)> {
         Vec::new()
     }
 
