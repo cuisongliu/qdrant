@@ -38,7 +38,6 @@ use storage::rbac::Access;
     not(target_env = "msvc"),
     any(target_arch = "x86_64", target_arch = "aarch64")
 ))]
-use tikv_jemallocator::Jemalloc;
 
 use crate::common::helpers::{
     create_general_purpose_runtime, create_search_runtime, create_update_runtime,
@@ -52,13 +51,6 @@ use crate::migrations::single_to_cluster::handle_existing_collections;
 use crate::settings::Settings;
 use crate::snapshots::{recover_full_snapshot, recover_snapshots};
 use crate::startup::{remove_started_file_indicator, touch_started_file_indicator};
-
-#[cfg(all(
-    not(target_env = "msvc"),
-    any(target_arch = "x86_64", target_arch = "aarch64")
-))]
-#[global_allocator]
-static GLOBAL: Jemalloc = Jemalloc;
 
 const FULL_ACCESS: Access = Access::full("For main");
 
